@@ -4,6 +4,8 @@ SmartSession is a real-time classroom monitoring system designed to help teacher
 
 The system focuses on **explainable logic**, **modular architecture**, and **graceful real-time processing**, rather than black-box AI models.
 
+> 📘 **[Technical Report](docs/TECHNICAL_REPORT.md)**: Detailed engineering documentation covering Architecture, Confusion Logic, and Code Integrity.
+
 ---
 
 ## 🎯 Problem Statement
