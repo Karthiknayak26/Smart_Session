@@ -1,0 +1,8 @@
+next>=14.0.0
+react>=18.0.0
+react-dom>=18.0.0
+lucide-react>=0.3
+tailwindcss>=3.4
+postcss>=8.4
+autoprefixer>=10.4
+# Note: This project uses package.json. This file is provided for submission compliance.
