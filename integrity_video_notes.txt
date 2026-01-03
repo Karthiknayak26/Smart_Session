@@ -1,5 +1,0 @@
-- Show student camera feed running
-- Trigger confusion by brow furrow + no smile
-- Explain confusion logic verbally
-- Show confusion.py and explain logic
-- Explain why communication method was chosen
