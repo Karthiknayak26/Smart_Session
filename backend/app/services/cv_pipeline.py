@@ -120,9 +120,14 @@ class CVPipeline:
             iris_dist = left_iris.x - left_eye_outer.x
             ratio = iris_dist / eye_width
 
-            # Thresholds (Tuned)
-            if ratio < 0.40: return "LEFT"   # Looking student-right (camera left)
-            if ratio > 0.60: return "RIGHT"  # Looking student-left
+            # Debug Ratio
+            logger.info(f"Gaze Ratio: {ratio:.3f}")
+
+            # Thresholds (Aggressive Tuning)
+            # 0.45 / 0.55 - Extremely narrow center.
+            # Almost any eye movement will register as LEFT/RIGHT.
+            if ratio < 0.45: return "LEFT" 
+            if ratio > 0.55: return "RIGHT"
             
             # Vertical Ratio (optional, simpler to stick to horizontal for MVP)
             return "CENTER"
@@ -138,11 +143,20 @@ class CVPipeline:
             
             normalized = brow_dist / face_width
             # Typical range: 0.15 (furrowed) to 0.25 (relaxed)
-            # Map to 0.0 - 1.0 (1.0 = most furrowed)
-            # score = 1.0 - (normalized - 0.15) * 10 
-            # Simplified:
-            if normalized < 0.18: return 0.8
-            return 0.1
+            # Continuous Mapping
+            # Normalized = BrowDist / FaceWidth
+            # Range: 0.15 (Furrowed) <-> 0.25 (Relaxed)
+            
+            # Linear Map: 1.0 (Furrowed) -> 0.0 (Relaxed)
+            # Baseline changed to 0.30 (was 0.25) to boost sensitivity for all users
+            # score = (0.30 - normalized) * 10
+            score = (0.30 - normalized) * 10
+            
+            # Debug Raw Values
+            # logger.info(f"Brow Raw: {normalized:.4f} -> Score: {score:.2f}")
+            
+            # Clamp between 0.0 and 1.0
+            return max(0.0, min(1.0, score))
         except:
             return 0.0
 

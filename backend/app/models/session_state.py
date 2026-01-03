@@ -14,6 +14,7 @@ class AlertType(Enum):
     MULTIPLE_FACES = "MULTIPLE_FACES"
     NO_FACE = "NO_FACE"
     UNAUTHORIZED_OBJECT = "UNAUTHORIZED_OBJECT"
+    GAZE_AWAY = "GAZE_AWAY"
 
 class SessionState(BaseModel):
     """

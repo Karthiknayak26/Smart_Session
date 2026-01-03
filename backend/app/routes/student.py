@@ -11,6 +11,7 @@ from app.state.session_store import SESSION_STORE
 
 # Shared State (MVP)
 # The SESSION_STORE is now imported from app.state.session_store
+from app.services.connection_manager import manager
 
 # Models
 from app.models.session_state import SessionState, StudentStatus, AlertType
@@ -82,6 +83,11 @@ async def process_frame(payload: FramePayload):
             current_status = StudentStatus.DISTRACTED
             current_alert = AlertType.MULTIPLE_FACES
         
+        # (1.5) GAZE AWAY
+        elif integrity_alert == ProctoringAlert.GAZE_AWAY:
+            current_status = StudentStatus.DISTRACTED
+            current_alert = AlertType.GAZE_AWAY
+        
         # (2) CONFUSED (Sustained)
         elif is_confused:
              current_status = StudentStatus.CONFUSED
@@ -108,12 +114,29 @@ async def process_frame(payload: FramePayload):
         
         # Processing Time
         processing_time = (time.time() - start_time) * 1000
-        logger.info(f"Processed {payload.studentId} in {processing_time:.2f}ms: Faces={face_count}, Alert={current_alert.value}, Score={confusion_score}")
+        
+        # detailed debug logging
+        logger.info(f"Student {payload.studentId} | Gaze: {metrics.get('gaze')} | Brow: {metrics.get('brow'):.2f} | Smile: {metrics.get('smile'):.2f} | Confused: {is_confused} | Status: {current_status.value} | Alert: {current_alert.value}")
+        
+        # User Feedback Hint
+        bs = metrics.get('brow', 0.0)
+        ss = metrics.get('smile', 0.0)
+        if bs > 0.15 and bs < 0.35:
+            logger.warning(f"⚠️  ALMOST CONFUSED! Frown Harder! (Current: {bs:.2f}, Needed: >0.35)")
+        if bs > 0.4 and ss > 0.3:
+            logger.warning(f"⚠️  SMILE DETECTED! Stop Smiling to trigger Confusion. (Smile: {ss:.2f})")
         
         
         # Update Global Store
         SESSION_STORE[payload.studentId] = session_state
         
+        # Broadcast via WebSocket (Hybrid Approach)
+        try:
+            # Pydantic .dict() uses configured use_enum_values=True
+            await manager.broadcast([s.dict() for s in SESSION_STORE.values()])
+        except Exception as e:
+            logger.warning(f"WS Broadcast failed: {e}")
+
         return session_state
 
     except HTTPException:

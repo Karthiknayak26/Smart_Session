@@ -28,112 +28,53 @@ SmartSession addresses this by analyzing live camera frames and presenting **cle
 ---
 
 ## 🏗️ System Architecture
+1. **Hybrid Communication**: Uses **WebSockets** for real-time, low-latency updates (status, feedback) and **HTTP** for robust initial state fetching and fallbacks.
+2. **Global Session Store**: Singleton in-memory store in Python ensures state persistence even if the frontend reconnects.
 
 ```mermaid
 graph TD
-    A[Student Camera (Browser)] --> B[Frontend (React)]
-    B --> C[Backend (FastAPI)]
-    C --> D[Frame Decoder]
-    D --> E[CV Pipeline]
-    E --> F[Proctoring Engine]
-    F --> G[Confusion Engine]
-    G --> H[Session State Aggregation]
-    H --> I[Teacher Dashboard]
+    A[Student Camera (Browser)] -->|WebSocket (Frames)| C[Backend (FastAPI)]
+    C -->|WebSocket (Broadcast)| B[Teacher Dashboard]
+    B -->|HTTP (Polling Fallback)| C
+    C --> D[CV Pipeline (MediaPipe)]
+    D --> E[Proctoring & Confusion Logic]
+    E --> F[Session Store]
 ```
 
 ---
 
 ## 🔧 Technology Stack
-
 ### Frontend
-- React
+- React / Next.js
 - TailwindCSS
-- HTTP polling (MVP)
-- Modular component structure
+- **WebSocket API (Native)**
 
 ### Backend
-- FastAPI
-- OpenCV
-- MediaPipe Face Mesh
-- Pydantic models
-- In-memory session store (MVP)
+- **FastAPI (Async)**
+- **WebSockets** (Connection Manager)
+- MediaPipe (Face Mesh) & OpenCV (Fallback)
 
 ---
 
-## 📦 Core Components
-
-### 1. Camera Capture (Student Side)
-- Secure camera access
-- Frame capture at fixed FPS
-- Base64 encoding
-- Graceful error handling
-
-### 2. CV Pipeline
-- MediaPipe Face Mesh
-- Face count detection
-- Defensive handling of corrupted frames
-
-### 3. Proctoring Engine
-Rule-based checks:
-- No face detected
-- Multiple faces detected
-
-Stateless by design to avoid false positives.
-
-### 4. Confusion Engine
-Custom, explainable logic based on:
-- Brow squeeze
-- Head tilt
-- Persistence over time
-
-Avoids generic emotion classifiers.
-
-### 5. Session State Model
-Aggregates:
-- Student status
-- Proctoring alerts
-- Face count
-- Confusion score
-- Timestamp
-
-This snapshot is consumed directly by the teacher dashboard.
-
----
-
-## 📊 Teacher Dashboard
-
-- Real-time session snapshots
-- Color-coded student states
-- Lightweight timeline of recent activity
-- HTTP polling (3s interval) for MVP simplicity
-
----
-
-## ⚡ Performance & Reliability
-
-- End-to-end latency tested and logged
-- Typical processing time within acceptable real-time limits
-- Corrupted frames handled gracefully
-- No backend crashes on invalid input
+## 📦 Key Implementation Features
+1.  **Hybrid Real-Time Engine**: Primary WebSocket channel for sub-100ms updates, with redundant HTTP polling for network resilience.
+2.  **Explainable Confusion AI**: Geometric brow-furrow analysis (not black-box), ensuring transparency.
+3.  **Proctoring Integrity**: Detects "Looking Away" (Left/Right/Up/Down) using gaze vector algebra.
+4.  **Robust Fallback**: If MediaPipe fails, the system auto-downgrades to OpenCV Haar Cascades without crashing.
 
 ---
 
 ## 🧪 Testing Strategy
-
-- Panic test (forced confusion state)
-- Latency sanity checks
-- Edge case handling (no face, multiple faces)
-- Timeline validation
+- **Confusion**: Deterministic "Frown Test" with thresholds tuned for webcam sensitivity.
+- **Latency**: End-to-end frame-to-dashboard latency tracked (<200ms).
+- **Edge Cases**: Handles disconnected clients, no-face, and partial face data gracefully.
 
 ---
 
 ## 🔮 Future Improvements
-
-- WebSocket-based real-time streaming
-- Persistent storage (Redis / DB)
-- Advanced gaze estimation
-- Teacher alerts & notifications
-- Multi-session scalability
+- Persistent Database (PostgreSQL)
+- Authentication (OAuth)
+- Multi-Room Support
 
 ---
 

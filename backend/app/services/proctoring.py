@@ -13,7 +13,8 @@ class ProctoringAlert(Enum):
 class ProctoringEngine:
     def __init__(self):
         self.gaze_start_time = None
-        self.GAZE_THRESHOLD_SECONDS = 4.0
+        # Tuned: 3.0s (was 4.0s) to consistently trigger alert in demo
+        self.GAZE_THRESHOLD_SECONDS = 3.0
 
     def evaluate(self, face_count: int, gaze_direction: str) -> ProctoringAlert:
         """

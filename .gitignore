@@ -45,3 +45,26 @@ temp/
 # Session data (should never be committed)
 sessions/
 data/recordings/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+input.jpg
+integrity_video_notes.txt

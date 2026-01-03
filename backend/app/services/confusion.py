@@ -9,7 +9,8 @@ class ConfusionEngine:
     Triggers 'Confused' only after sustained presence without distraction.
     """
     def __init__(self):
-        self.TIME_WINDOW_SECONDS = 3.0
+        # Tuned for Demo: 1.0s (was 3.0s) for instant feedback
+        self.TIME_WINDOW_SECONDS = 1.0
         self.state = {}
 
     def calculate_state(self, brow_score: float, smile_score: float) -> str:
@@ -22,7 +23,8 @@ class ConfusionEngine:
 
         # Confusion Rule
         # Brow furrowed (High Score) AND No Smile
-        if brow_score > 0.5 and smile_score < 0.3:
+        # Tuned: Brow > 0.35 is sufficient for subtle expressions
+        if brow_score > 0.35 and smile_score < 0.3:
             return "CONFUSED"
 
         return "FOCUSED"

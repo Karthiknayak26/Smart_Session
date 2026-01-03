@@ -7,15 +7,12 @@ const Dashboard = () => {
     const [connectionStatus, setConnectionStatus] = useState('CONNECTED');
 
     // Polling Logic
+    // Hybrid: WebSocket + Polling
     useEffect(() => {
-        const loadStudents = async () => {
-            const data = await fetchStudentStates();
-            setStudents(data);
-
-            // Update Timeline
+        // Shared Timeline Update Logic
+        const updateTimeline = (data) => {
             setTimeline(prev => {
                 const updated = { ...prev };
-
                 data.forEach(student => {
                     const entry = {
                         status: student.status,
@@ -23,27 +20,46 @@ const Dashboard = () => {
                         time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" })
                     };
 
-                    if (!updated[student.student_id]) {
-                        updated[student.student_id] = [];
+                    if (!updated[student.student_id]) updated[student.student_id] = [];
+
+                    // Simple Dedup: Compare with latest
+                    const last = updated[student.student_id][0];
+                    if (!last || last.status !== entry.status || last.alert !== entry.alert || last.time !== entry.time) {
+                        updated[student.student_id] = [entry, ...updated[student.student_id]].slice(0, 10);
                     }
-
-                    updated[student.student_id] = [
-                        entry,
-                        ...updated[student.student_id]
-                    ].slice(0, 10); // keep last 10 entries
-
                 });
-
                 return updated;
             });
-
-            console.log("Teacher dashboard updated with timeline");
         };
 
-        loadStudents(); // initial load
+        const loadStudents = async () => {
+            const data = await fetchStudentStates();
+            setStudents(data);
+            updateTimeline(data);
+        };
 
-        const interval = setInterval(loadStudents, 3000); // polling
-        return () => clearInterval(interval);
+        // 1. Initial Load & Polling (Fallback)
+        loadStudents();
+        const interval = setInterval(loadStudents, 1000); // Keep polling active for robust sync
+
+        // 2. WebSocket (Real-Time)
+        let ws;
+        try {
+            ws = new WebSocket("ws://localhost:8000/teacher/ws");
+            ws.onopen = () => setConnectionStatus('CONNECTED (WS+HTTP)');
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                setStudents(data);
+                updateTimeline(data);
+            };
+            ws.onerror = () => setConnectionStatus('CONNECTED (HTTP Fallback)');
+            ws.onclose = () => setConnectionStatus('CONNECTED (HTTP Fallback)');
+        } catch (e) { console.error("WS Init Failed", e); }
+
+        return () => {
+            clearInterval(interval);
+            if (ws) ws.close();
+        };
     }, []);
 
     const getStatusColor = (status, alert) => {
@@ -79,8 +95,8 @@ const Dashboard = () => {
 
                     <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2 text-sm text-gray-500">
-                            <span className={`w-2 h-2 rounded-full ${connectionStatus === 'CONNECTED' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                            <span>{connectionStatus === 'CONNECTED' ? 'Live System' : 'Disconnected'}</span>
+                            <span className={`w-2 h-2 rounded-full ${connectionStatus.includes('CONNECTED') ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                            <span>{connectionStatus.includes('CONNECTED') ? connectionStatus : 'Disconnected'}</span>
                         </div>
                         <button className="px-4 py-2 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 transition">
                             End Session
