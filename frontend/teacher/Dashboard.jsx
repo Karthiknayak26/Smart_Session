@@ -175,43 +175,39 @@ const Dashboard = () => {
                                         ></div>
                                     </div>
 
-                                    {/* Timeline Visual Chart (Engagement History) */}
+                                    {/* Timeline Display */}
                                     {timeline[student.student_id] && (
                                         <div className="mt-4 pt-3 border-t border-gray-100">
+                                            {/* Visual Bar Chart */}
                                             <div className="flex justify-between items-end mb-2">
                                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Engagement History</p>
                                                 <span className="text-[10px] text-gray-400">Now</span>
                                             </div>
-
-                                            {/* Bar Chart Container */}
-                                            <div className="flex items-end justify-between h-8 space-x-1">
+                                            <div className="flex items-end justify-between h-8 space-x-1 mb-4">
                                                 {[...timeline[student.student_id]].reverse().slice(-20).map((item, idx) => {
-                                                    // Determine Color & Height based on Status
                                                     let color = 'bg-gray-200';
-                                                    let height = 'h-1/3'; // Default low
-
-                                                    if (item.alert !== 'NONE') {
-                                                        color = 'bg-red-500';
-                                                        height = 'h-full'; // Full height for alert
-                                                    } else if (item.status === 'FOCUSED') {
-                                                        color = 'bg-green-400';
-                                                        height = 'h-1/2';
-                                                    } else if (item.status === 'CONFUSED') {
-                                                        color = 'bg-yellow-400';
-                                                        height = 'h-3/4';
-                                                    } else if (item.status === 'DISTRACTED') {
-                                                        color = 'bg-orange-400';
-                                                        height = 'h-3/4';
-                                                    }
-
-                                                    return (
-                                                        <div
-                                                            key={idx}
-                                                            className={`w-full rounded-sm transition-all duration-300 ${color} ${height}`}
-                                                            title={`${item.time}: ${item.status}`}
-                                                        />
-                                                    );
+                                                    let height = 'h-1/3';
+                                                    if (item.alert !== 'NONE') { color = 'bg-red-500'; height = 'h-full'; }
+                                                    else if (item.status === 'FOCUSED') { color = 'bg-green-400'; height = 'h-1/2'; }
+                                                    else if (item.status === 'CONFUSED') { color = 'bg-yellow-400'; height = 'h-3/4'; }
+                                                    else if (item.status === 'DISTRACTED') { color = 'bg-orange-400'; height = 'h-3/4'; }
+                                                    return <div key={idx} className={`w-full rounded-sm transition-all duration-300 ${color} ${height}`} title={`${item.time}: ${item.status}`} />;
                                                 })}
+                                            </div>
+
+                                            {/* Text List */}
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Recent Logs</p>
+                                            <div className="space-y-1.5">
+                                                {timeline[student.student_id].slice(0, 5).map((item, idx) => (
+                                                    <div key={idx} className="flex justify-between text-xs items-center">
+                                                        <span className="text-gray-400 font-mono text-[10px]">{item.time}</span>
+                                                        <span className={`font-medium ${item.alert !== 'NONE' ? 'text-red-500' : 'text-gray-600'}`}>
+                                                            {item.alert !== "NONE"
+                                                                ? item.alert.replace('_', ' ')
+                                                                : item.status}
+                                                        </span>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     )}
