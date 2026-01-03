@@ -33,12 +33,12 @@ SmartSession addresses this by analyzing live camera frames and presenting **cle
 
 ```mermaid
 graph TD
-    A[Student Camera (Browser)] -->|WebSocket (Frames)| C[Backend (FastAPI)]
-    C -->|WebSocket (Broadcast)| B[Teacher Dashboard]
-    B -->|HTTP (Polling Fallback)| C
-    C --> D[CV Pipeline (MediaPipe)]
-    D --> E[Proctoring & Confusion Logic]
-    E --> F[Session Store]
+    A["Student Camera (Browser)"] -->|WebSocket Frames| C["Backend (FastAPI)"]
+    C -->|WebSocket Broadcast| B["Teacher Dashboard"]
+    B -->|HTTP Polling Fallback| C
+    C --> D["CV Pipeline (MediaPipe)"]
+    D --> E["Proctoring & Confusion Logic"]
+    E --> F["Session Store"]
 ```
 
 ---
