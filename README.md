@@ -94,7 +94,7 @@ npm run dev
 
 ### Access Points
 - **Teacher Dashboard**: [http://localhost:3000/teacher](http://localhost:3000/teacher)
-- **Student Portal**: [http://localhost:3000/student](http://localhost:3000/student)
+- **Student Portal**: [http://localhost:3000/student](http://localhost:3000/)
 
 ## 🎥 Demo & Walkthrough
 
